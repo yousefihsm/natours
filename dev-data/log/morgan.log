@@ -1,0 +1,7 @@
+POST /api/v1/tours 400 51 - 3.541 ms
+POST /api/v1/tours 400 51 - 5.497 ms
+GET /api/v1/tours 200 9229 - 1.295 ms
+-------------------------------------------
+PATCH /api/v1/tours/1 200 61 - 5.301 ms
+PATCH /api/v1/tours/1 200 61 - 0.964 ms
+PATCH /api/v1/tours/1 200 61 - 5.730 ms

@@ -9,6 +9,7 @@ const xss = require('xss-clean');
 const mongoSanitize = require('express-mongo-sanitize');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -88,17 +89,7 @@ const rateLimiter = rateLimit({
 });
 app.use('/api', rateLimiter);
 
-/* 
-// Limit users to create two account only everyweek.
-const createAccountLimiter = rateLimit({
-  windowMs: 7 * 24 * 60 * 60 * 1000,
-  max: 2,
-  message: `You can create just two accounts everyweek. please try again after 7 days ago`,
-  standardHeaders: true,
-  lagacyHeaders: false,
-});
-app.post('/api/v1/users/signup', createAccountLimiter); 
-*/
+app.use(compression());
 
 // TEST MIDDLEWARE
 app.use((req, res, next) => {

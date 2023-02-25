@@ -4,7 +4,7 @@
   "rules": {
     "prettier/prettier": ["error", { "endOfLine": "auto" }],
     "spaced-comment": "off",
-    "no-console": "off",
+    "no-console": "warn",
     "consistent-return": "off",
     "func-names": "off",
     "object-shorthand": "off",
@@ -13,7 +13,13 @@
     "no-return-await": "off",
     "no-underscore-dangle": "off",
     "class-methods-use-this": "off",
+    "arrow-body-style": "off",
     "prefer-destructuring": ["error", { "object": true, "array": false }],
     "no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|val" }]
+  },
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "sourceType": "module",
+    "allowImportExportEverywhere": true
   }
 }

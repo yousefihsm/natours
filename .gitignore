@@ -1,5 +1,7 @@
 node_modules
+.cache
+.vscode
 build
 npm-debug.log
-.env
+*.env
 .DS_Store

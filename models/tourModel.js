@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 // const validator = require('validator');
+// const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -11,10 +12,6 @@ const tourSchema = new mongoose.Schema(
       trim: true,
       maxLength: [40, 'A tour name must have 40 characters.'],
       minLength: [10, 'A tour name must have 10 characters.'],
-      // validate: [
-      //   validator.isAlpha,
-      //   'The tour name should only include alphabets.',
-      // ],
     },
 
     slug: String,
@@ -43,6 +40,7 @@ const tourSchema = new mongoose.Schema(
       default: 4.5,
       max: [5.0, 'The tour ratingsAverage must be less than 5.0'],
       min: [1.0, 'The tour ratingsAverage must be above than 1.0'],
+      set: (val) => Math.round(val * 10) / 10,
     },
 
     ratingsQuantity: {
@@ -94,6 +92,36 @@ const tourSchema = new mongoose.Schema(
     secretTour: {
       type: Boolean,
     },
+
+    startLocation: {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guids: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -101,8 +129,18 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
+
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
+});
+
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour',
+  localField: '_id',
 });
 
 // DOCUMENT MIDDLEWARE
@@ -110,6 +148,16 @@ tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true }); // this here means current document
   next();
 });
+
+/* 
+- Embeding : use a ore save middleware to field user by id and add them to guids fields. 
+tourSchema.pre('save', async function (next) {
+  this.guids = await Promise.all(
+    this.guids.map(async (id) => await User.findById(id))
+  );
+  next();
+});
+ */
 
 /*
 tourSchema.post('save', function (next) {
@@ -120,20 +168,22 @@ tourSchema.post('save', function (next) {
 // QUERY MIDDLEWARE
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } }); // this here means current query
-  this.start = Date.now();
   next();
 });
 
-tourSchema.post(/^find/, function (docs, next) {
-  console.log(`query took ${Date.now() - this.start} milliseconds.`);
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guids',
+    select: '-__v',
+  });
   next();
 });
 
 // AGGREGATION MIDDLEWARE
-tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-  next();
-});
+// tourSchema.pre('aggregate', function (next) {
+//   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+//   next();
+// });
 
 const Tour = mongoose.model('Tour', tourSchema);
 module.exports = Tour;

@@ -18,7 +18,9 @@ const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
 
+const bookingController = require('./controller/bookingController');
 const globalErrorHandler = require('./controller/errorController');
+
 const AppError = require('./utils/appError');
 
 dotenv.config({ path: './config.env' });
@@ -41,10 +43,10 @@ app.use(
   })
 );
 
-// For the non-simple http verbs(delete and patch) that has preflight phase.
-// that means before the non-simple http verbs browser send an options request to the API.
+/* For the non-simple http verbs(delete and patch) that has preflight phase.
+ that means before the non-simple http verbs browser send an options request to the API. */
+// app.options('/api/v1/tours/:id', cors()); // work on a specific API.
 app.options('*', cors());
-// app.options('/api/v1/tours/:id', cors()); // for a specific API.
 
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -64,6 +66,24 @@ app.use(
       },
     },
   })
+);
+
+// Limit requests from same API.
+const rateLimiter = rateLimit({
+  windowMs: 24 * 60 * 60 * 1000,
+  max: 50,
+  message:
+    'Too many request is sended to server with this IP. please try again later.',
+  standardHeaders: true,
+  lagacyHeaders: false,
+});
+app.use('/api', rateLimiter);
+
+// Here body would be raw format not json. so we add it here before json parser middleware.
+app.post(
+  '/webhook-checkout',
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout
 );
 
 // Body parser, reading data from body into req.body
@@ -96,17 +116,7 @@ if (process.env.NODE_ENV === 'development') {
   );
 }
 
-// Limit requests from same API.
-const rateLimiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000,
-  max: 50,
-  message:
-    'Too many request is sended to server with this IP. please try again later.',
-  standardHeaders: true,
-  lagacyHeaders: false,
-});
-app.use('/api', rateLimiter);
-
+// Enable compression on application. (we can test it with online services).
 app.use(compression());
 
 // TEST MIDDLEWARE

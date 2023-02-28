@@ -10,6 +10,7 @@ const mongoSanitize = require('express-mongo-sanitize');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
+const cors = require('cors');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -30,6 +31,21 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
 // GLOBAL MIDDLEWARES
+// Implement CORS (CORS added to all routes)
+app.use(cors());
+// access-control-allow-origin
+// api.natours.com, front-end natours.com
+app.use(
+  cors({
+    origin: 'https://www.natours.com',
+  })
+);
+
+// For the non-simple http verbs(delete and patch) that has preflight phase.
+// that means before the non-simple http verbs browser send an options request to the API.
+app.options('*', cors());
+// app.options('/api/v1/tours/:id', cors()); // for a specific API.
+
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -105,6 +121,7 @@ app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 app.use('/api/v1/bookings', bookingRouter);
+// app.use('/api/v1/bookings',cors(), bookingRouter); // Add the CORS to specific routes
 
 app.all('*', (req, res, next) => {
   next(new AppError(`The server cant find ${req.originalUrl} endpoint.`, 404));

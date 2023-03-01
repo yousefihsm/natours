@@ -1,9 +1,12 @@
 /* eslint-disable */
 import '@babel/polyfill';
-import { login, logout } from './login';
-import { updateSettings } from './updateSettings';
+
 import { displayMap } from './mapbox';
 import { bookTour } from './stripe';
+
+import { login, logout } from './login';
+import { updateSettings } from './updateSettings';
+import { showAlert } from './alerts';
 
 // DOM ELEMENTS
 const loginForm = document.querySelector('.form--login');
@@ -73,3 +76,6 @@ if (bookTourBtn)
     const { tourId } = e.target.dataset;
     bookTour(tourId);
   });
+
+const alertMessage = document.querySelector('body').dataset.alert;
+if (alertMessage) showAlert('success', alertMessage, 20);

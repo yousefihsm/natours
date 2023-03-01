@@ -1477,3 +1477,6 @@ GET /api/v1/bookings/ 404 2211 - 4.994 ms
 GET /api/v1/booking 200 420 - 62.204 ms
 GET /api/v1/bookings/ 200 420 - 88.813 ms
 GET /api/v1/bookings/ 200 2129 - 97.048 ms
+GET / 500 - - 675.622 ms
+GET / 200 - - 261.444 ms
+GET / 500 - - 86.206 ms
